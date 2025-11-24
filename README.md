@@ -9,4 +9,4 @@
  - 启动,使用命令`sudo ./start.sh`以启动,期间注意网络通畅
 
 ### NyxBot项目
-# Warframe状态查询机器人,部署简易,功能丰富,[地址]("https://github.com/KingPrimes/NyxBot")
+ - Warframe状态查询机器人,部署简易,功能丰富,[地址]("https://github.com/KingPrimes/NyxBot")
