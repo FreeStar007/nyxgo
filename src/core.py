@@ -194,7 +194,7 @@ def install_napcat() -> bool:
     if not shell(f"sudo cp {package_file} {temp_file}", "完蛋，复制错误，找开发者去"):
         return False
         
-    with open("./temp", "r+") as rw:
+    with open(f"{temp_file}", "r+") as rw:
         data = json.loads(rw.read())
         data["main"] = "./loadNapCat.cjs"
         rw.seek(0)
