@@ -4,6 +4,7 @@ import sys
 import httpx
 import json
 import subprocess as sp
+from datetime import datetime
 from platform import machine
 from uuid import uuid4
 from zipfile import ZipFile
@@ -12,40 +13,56 @@ from inquirer import Text, List, Checkbox, Confirm, Path, prompt
 from inquirer.errors import ValidationError
 from inquirer.questions import Question
 from rich.panel import Panel
-from rich.console import Console
 from rich.progress import Progress
+from rich import print as rprint
 
 
 __version__ = "0.1"
-# rich的全局控制台对象实例
-console = Console()
-# 字体基础颜色，这里为加粗
-BASE = "bold"
 # 日志函数
-info = lambda message: console.print(message, style=f"{BASE} green")
-warn = lambda message: console.print(message, style=f"{BASE} yellow")
-error = lambda message: console.print(message, style=f"{BASE} red")
+date = lambda: datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+info = lambda message: rprint(f"[bold][green][{date()} INFO] {message}[/green][/bold]")
+warn = lambda message: rprint(f"[bold][yellow][{date()} WARN] {message}[/yellow][/bold]")
+error = lambda message: rprint(f"[bold][red][{date()} ERROR] {message}[/red][/bold]")
 # 直接返回True的装饰器，测试用
 all_true = lambda _: lambda: True
 # 直接返回False的装饰器，同上
 all_false = lambda _: lambda: False
+pkgm = None # 初始化使用的包管理器判断变量
 
 
-def check_null(target: str) -> bool:
+def checkout_pkgm() -> bool:
+    global pkgm
+    if os.path.exists("/bin/apt") or os.path.exists("/usr/bin/apt"):
+        info("使用apt包管理器")
+        pkgm = "apt"
+    elif os.path.exists("/bin/dnf") or os.path.exists("/usr/bin/dnf"):
+        info("使用dnf包管理器")
+        pkgm = "dnf"
+    elif os.path.exists("/bin/yum") or os.path.exists("/usr/bin/yum"):
+        info("使用yum包管理器")
+        pkgm = "yum"
+    else:
+        error("暂不支持的系统啊")
+        return False
+        
+    return True
+
+
+def checkout_null(target: str) -> bool:
     # 非空检测
     if not target:
         raise ValidationError("", reason="啥都没输入啊")
 
 
-def check_path(_, current) -> bool:
+def checkout_path(_, current) -> bool:
     if not os.path.exists(current):
         raise ValidationError("", reason="这个路径无效啊")
         
     return True
 
 
-def check_port(_, current) -> bool:
-    check_null(current)
+def checkout_port(_, current) -> bool:
+    checkout_null(current)
     
     # 检查是否为数字
     if not current.isdigit():
@@ -73,7 +90,7 @@ def downloader(url: str, save_path: str) -> bool:
                         wb.write(chunk)
                         progress.update(task, advance=len(chunk))
     except httpx.HTTPError:
-        error(f"下载失败，你手动下载这个文件{url}然后存到{save_path}")
+        error(f"下载失败了，要确保网络稳定啊！")
         return False
 
     return True
@@ -82,7 +99,12 @@ def downloader(url: str, save_path: str) -> bool:
 # @all_true
 def install_jdk() -> bool:
     try:
-        sp.run(("apt", "install", "-y", "openjdk-21-jdk"), check=True)
+        target_pkg = {
+            "apt": ("openjdk-21-jdk",),
+            "dnf": ("java-21-openjdk",)
+        }
+        target_pkg["yum"] = target_pkg["dnf"]
+        sp.run((pkgm, "install", "-y", *target_pkg[pkgm]), check=True)
     except sp.CalledProcessError:
         error("openjdk21安装失败了，只能你自己先装上再重启脚本了")
         return False
@@ -91,16 +113,12 @@ def install_jdk() -> bool:
     return True
 
 
-def check_structure() -> str:
-    structure = machine().lower()
-    if structure in ("x86_64", "amd64", "x64"):
-        return "x64"
-
-    if structure in ("arm64", "aarch64", "armv7l", "armv8l"):
-        return "arm"
-
-    if structure in ("mips", "mips64"):
-        return "mips"
+def checkout_structure() -> str:
+    match machine().lower():
+        case "x86_64" | "amd64" | "x64":
+            return "x64"
+        case "arm64" | "aarch64" | "armv7l" | "armv8l":
+            return "arm"
 
     return "unknown"
 
@@ -108,29 +126,27 @@ def check_structure() -> str:
 # @all_true
 def install_qq() -> bool:
     # 下载Linux版QQ
-    save_path = f"/tmp/linuxqq-{uuid4()}.deb"
     info("开始帮你搞Linux版的QQ……")
-    target_url = ""
-    match check_structure():
-        case "x64":
-            target_url = "https://dldir1v6.qq.com/qqfile/qq/QQNT/Linux/QQ_3.2.21_251114_amd64_01.deb"
-        case "arm":
-            target_url = "https://dldir1v6.qq.com/qqfile/qq/QQNT/Linux/QQ_3.2.21_251114_arm64_01.deb"
-        case "mips":
-            target_url = "https://dldir1v6.qq.com/qqfile/qq/QQNT/Linux/QQ_3.2.21_251114_mips64el_01.deb"
-        case "unknown":
-            error("我靠，我不知道你这机器是啥架构的，你自己去下载吧")
-            return False
-        case _:
-            error("神人啊，你这机器我还真不知道")
-            return False
-
-    if not downloader(target_url, save_path):
+    target_pkg = {
+        "apt": {
+            "x64": "https://dldir1v6.qq.com/qqfile/qq/QQNT/Linux/QQ_3.2.21_251114_amd64_01.deb",
+            "arm":  "https://dldir1v6.qq.com/qqfile/qq/QQNT/Linux/QQ_3.2.21_251114_arm64_01.deb",
+            "suffix": ".deb"
+        },
+        "dnf": {
+            "x64": "https://dldir1v6.qq.com/qqfile/qq/QQNT/Linux/QQ_3.2.21_251114_x86_64_01.rpm",
+            "arm": "https://dldir1v6.qq.com/qqfile/qq/QQNT/Linux/QQ_3.2.21_251114_aarch64_01.rpm",
+            "suffix": ".rpm"
+        }
+    }
+    target_pkg["yum"] = target_pkg["dnf"]
+    save_path = f"linuxqq-{uuid4()}{target_pkg[pkgm]['suffix']}"
+    if not downloader(target_pkg[pkgm][checkout_structure], save_path):
         return False
 
     info("我装一下它……")
     try:
-        sp.run(("apt", "install", "-y", save_path), check=True)
+        sp.run((pkgm, "install", "-y", save_path), check=True)
     except sp.CalledProcessError:
         error("我靠，装失败了，你自己装试试看")
         return False
@@ -143,9 +159,14 @@ def install_qq() -> bool:
 # @all_true
 def install_napcat() -> bool:
     save_path = f"/tmp/napcat-{uuid4()}.zip"
-    info("开始帮你搞xvfb和xauth……")
+    info("开始帮你搞Xvfb和xauth……")
+    target_pkg = {
+        "apt": ("xvfb", "xauth"),
+        "dnf": ("xorg-x11-server-Xvfb", "xorg-x11-xauth")
+    }
+    target_pkg["yum"] = target_pkg["dnf"]
     try:
-        sp.run(("apt", "install", "xvfb", "xauth"), check=True)
+        sp.run((pkgm, "install", "-y", *target_pkg[pkgm]), check=True)
     except sp.CalledProcessError:
         error("安装xvfb和xauth时失败了，只能靠你自己了或者求助吧")
         return False
@@ -202,8 +223,11 @@ def env_check() -> bool:
     # 检查系统环境
     info("让我看看你环境正不正常啊……")
     if os.name == "posix":
-        if not (os.path.exists("/usr/bin/apt") or os.path.exists("/bin/apt")):
-            error("没有apt包管理器啊，你这是不是非标准Debian系的系统啊")
+        if not checkout_pkgm():
+            return
+            
+        if checkout_structure() == "unknown":
+            error("暂不支持你这架构啊")
             return False
             
         if not (os.path.exists("/usr/bin/java") or os.path.exists("/bin/java")):
@@ -216,6 +240,7 @@ def env_check() -> bool:
             if not install_qq():
                 return False
             
+        info("环境没问题，继续")
         return True
     else:
         error("目前仅支持Debian系统啊也就是用apt包管理器的，等我再开发其它的吧")
@@ -224,7 +249,7 @@ def env_check() -> bool:
 
 def main():
     # 主函数，用于引导NyxBot的安装
-    console.print(Panel(
+    rprint(Panel(
         "Warframe状态查询机器人，由著名架构师王小美开发，部署简易，更新勤奋，让我们追随她！\n请在安装过程中确保网络通畅啊！\n王小美个人博客地址：https://kingprimes.top",
         title="NyxBot引导脚本",
         subtitle=f"版本：{__version__}",
@@ -252,7 +277,7 @@ def main():
                 return
 
     ask(Text("_", message="这里我会等你多开终端启动好QQ机器人框架，好了就随便输入点什么，然后继续配置NyxBot吧"))
-    nyxbot_path = ask(Path("nyxbot_path", message="请输入NyxBot.jar的路径", validate=check_path))
+    nyxbot_path = ask(Path("nyxbot_path", message="请输入NyxBot.jar的路径", validate=checkout_path))
     info("配置NyxBot……")
     choices = ask(Checkbox("functions", message="请选择你要配置的选项", choices=(
         "NyxBot启动时的端口号",
@@ -261,7 +286,7 @@ def main():
     for choice in choices:
         match choice:
             case "NyxBot启动时的端口号":
-                command.append(f"--server.port={ask(Text('nyxbot_port', message='请输入NyxBot启动时端口号（默认8080）', default=8080, validate=check_port))}")
+                command.append(f"--server.port={ask(Text('nyxbot_port', message='请输入NyxBot启动时端口号（默认8080）', default=8080, validate=checkout_port))}")
             case _:
                 pass
 
