@@ -16,6 +16,7 @@ from rich.progress import Progress
 from rich import print as rprint
 
 
+# 版本号
 __version__ = "0.1"
 # 日志函数
 date = lambda: datetime.now().strftime("%Y-%m-%d %H:%M:%S")
@@ -83,7 +84,7 @@ def downloader(url: str, save_path: str) -> bool:
     try:
         with httpx.stream("GET", url, follow_redirects=True) as response:
             with Progress() as progress:
-                task = progress.add_task("下载必要文件中", total=int(response.headers.get("Content-Length", 0)))
+                task = progress.add_task("下载文件中", total=int(response.headers.get("Content-Length", 0)))
                 with open(save_path, "wb") as wb:
                     for chunk in response.iter_bytes():
                         wb.write(chunk)
@@ -139,8 +140,8 @@ def install_qq() -> bool:
         }
     }
     target_pkg["yum"] = target_pkg["dnf"]
-    save_path = f"linuxqq-{uuid4()}{target_pkg[pkgm]['suffix']}"
-    if not downloader(target_pkg[pkgm][checkout_structure], save_path):
+    save_path = f"/tmp/linuxqq-{uuid4()}{target_pkg[pkgm]['suffix']}"
+    if not downloader(target_pkg[pkgm][checkout_structure()], save_path):
         return False
 
     info("我装一下它……")

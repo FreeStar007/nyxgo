@@ -16,7 +16,7 @@ else
     echo "暂不支持的系统"
     exit
 fi
-$PKGM install python3-venv
+$PKGM install -y python3-venv
 TEMP_PYTHON=/usr/bin/python3
 TARGET=/usr/lib/nyxbot_venv
 TEMP_HOME=$TARGET/bin
