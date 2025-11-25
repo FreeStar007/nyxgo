@@ -31,9 +31,9 @@ pkgm = None # 初始化使用的包管理器判断变量
 
 
 # shell操作函数，包括命令输入与文件复制粘贴
-def shell(command: str, error_info: str) -> bool:
+def shell(command: str, error_info: str, complex=False) -> bool:
     try:
-        sp.run(command.strip().split(" "), check=True)
+        sp.run(command.strip().split(" ") if not complex else command, check=True, shell=complex)
     except sp.CalledProcessError:
         error(error_info)
         return False
@@ -189,7 +189,7 @@ def install_napcat() -> bool:
     if not copy("./loadNapCat.cjs", "/opt/QQ/resources/app", "配置文件复制失败了啊，报告开发者吧"):
         return False
 
-    """if not downloader("https://github.com/NapNeko/NapCatQQ/releases/download/v4.9.74/NapCat.Shell.zip", save_path):
+    if not downloader("https://github.com/NapNeko/NapCatQQ/releases/download/v4.9.74/NapCat.Shell.zip", save_path):
         return False
 
     info("开始解压NapCat压缩包……")
@@ -199,24 +199,13 @@ def install_napcat() -> bool:
         if not move(f"{save_path}_done", target_dir, "我靠，文件移动失败了，找开发者去"):
             return False
     else:
-        warn("目标目录已经有安排好的NapCat文件了，那我就不再解压了")"""
+        warn("目标目录已经有安排好的NapCat文件了，那我就不再解压了")
 
     info("开始处理package.json文件……")
     package_file = "/opt/QQ/resources/app/package.json"
-    temp_file = f"/tmp/{uuid4()}.json"
-    if not copy(package_file, temp_file, "完蛋，复制错误，找开发者去"):
+    if not shell(r"""sudo sed -i 's/"main": ".*\/index.js"/"main": ".\/loadNapCat.cjs"/' /opt/QQ/resources/app/package.json""", "package.json处理失败了啊", complex=True):
         return False
-        
-    with open(f"{temp_file}", "r+") as rw:
-        data = json.loads(rw.read())
-        data["main"] = "./loadNapCat.cjs"
-        rw.seek(0)
-        rw.write(json.dumps(data))
-        rw.truncate()
-        
-    if not move(temp_file, package_file, "Shit，剪切失败，去找开发者"):
-        return False
-        
+
     info("NapCat搞定，输入“xvfb-run -a qq --no-sandbox -q <你的QQ号>”来启动，会让你扫码登录，随后在它给的WebUI地址中配置一个WS服务器，消息格式选Array，然后自己输入一个端口，记住这个地址，例如6666端口地址就是ws://127.0.0.1:6666，然后在NyxBot的WebUI里面选择客户端模式去连接它就行了")
     remove(save_path, "删除临时文件失败了啊")
     return True
@@ -306,3 +295,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+

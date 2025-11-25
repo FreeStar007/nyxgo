@@ -3,7 +3,6 @@ if [ "$EUID" -eq 0 ]; then
     echo "不能以root用户的身份运行啊！"
     exit
 fi
-echo "虚拟环境初始化脚本，防污染系统依赖"
 NUSER=$USER
 BASE="/bin"
 USER_BASE="/usr/bin"
@@ -18,8 +17,11 @@ else
     echo "暂不支持的系统"
     exit
 fi
-sudo $PKGM install -y python3-venv
 TEMP_PYTHON=/usr/bin/python3
+if ! $TEMP_PYTHON -m venv --help > /dev/null 2>&1; then
+    echo "安装python3-venv……"
+    sudo $PKGM install python3-venv -y
+fi
 TARGET=/usr/lib/nyxbot_venv
 TEMP_HOME=$TARGET/bin
 if [ ! -d "$TARGET" ]; then
