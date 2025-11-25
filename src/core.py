@@ -189,13 +189,21 @@ def install_napcat() -> bool:
         warn("目标目录已经有安排好的NapCat文件了，那我就不再解压了")
 
     info("开始处理package.json文件……")
-    with open("/opt/QQ/resources/app/package.json", "r+") as ra:
-        data = json.loads(ra.read())
+    package_file = "/opt/QQ/resources/app/package.json"
+    temp_file = f"/tmp/{uuid4()}.json"
+    if not shell(f"sudo cp {package_file} {temp_file}", "完蛋，复制错误，找开发者去"):
+        return False
+        
+    with open("./temp", "r+") as rw:
+        data = json.loads(rw.read())
         data["main"] = "./loadNapCat.cjs"
-        ra.seek(0)
-        ra.write(json.dumps(data))
-        ra.truncate()
-
+        rw.seek(0)
+        rw.write(json.dumps(data))
+        rw.truncate()
+        
+    if not shell(f"sudo mv {temp_name} {package_file}", "Shit，复制失败，去找开发者"):
+        return False
+        
     info("NapCat搞定，输入“xvfb-run -a qq --no-sandbox -q <你的QQ号>”来启动，会让你扫码登录，随后在它给的WebUI地址中配置一个WS服务器，消息格式选Array，然后自己输入一个端口，记住这个地址，例如6666端口地址就是ws://127.0.0.1:6666，然后在NyxBot的WebUI里面选择客户端模式去连接它就行了")
     os.remove(save_path)
     return True

@@ -24,7 +24,7 @@ TEMP_HOME=$TARGET/bin
 if [ ! -d "$TARGET" ]; then
     echo "初始化虚拟环境……"
     sudo $TEMP_PYTHON -m venv $TARGET
-    sudo chown $NUSER:$NUSER $TARGET
+    sudo chown -R $NUSER:$NUSER $TARGET
     sudo chmod -R +x $TARGET
     $TEMP_HOME/pip3 install -r requirements.txt -i https://mirrors.tuna.tsinghua.edu.cn/pypi/web/simple
 fi
