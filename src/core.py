@@ -4,6 +4,7 @@ import httpx
 import json
 import subprocess as sp
 import shutil
+from typing import Any
 from datetime import datetime
 from platform import machine
 from uuid import uuid4
@@ -16,8 +17,6 @@ from rich.progress import Progress
 from rich import print as rprint
 
 
-# 版本号
-__version__ = "0.1"
 # 日志函数
 date = lambda: datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 info = lambda message: rprint(f"[bold][green][{date()} INFO] {message}[/green][/bold]")
@@ -30,7 +29,7 @@ all_false = lambda _: lambda: False
 pkgm = None # 初始化使用的包管理器判断变量
 
 
-# shell操作函数，包括命令输入与文件复制粘贴
+# 命令输入
 def shell(command: str, error_info: str, complex=False) -> bool:
     try:
         sp.run(command.strip().split(" ") if not complex else command, check=True, shell=complex)
@@ -41,18 +40,22 @@ def shell(command: str, error_info: str, complex=False) -> bool:
     return True
     
 
+# 文件删除
 def remove(target: str, error_info: str, append="") -> bool:
     return shell(f"sudo rm -f {target}{append}", error_info)
 
-    
+
+# 文件移动
 def move(source: str, target: str, error_info: str) -> bool:
     return shell(f"sudo mv {source} {target}", error_info)
     
-    
+
+# 文件复制
 def copy(source: str, target: str, error_info: str, append="") -> bool:
     return shell(f"sudo cp -f {source} {target}{append}", error_info)
 
 
+# 检测包管理器
 def checkout_pkgm() -> bool:
     global pkgm
     if os.path.exists("/bin/apt") or os.path.exists("/usr/bin/apt"):
@@ -71,12 +74,13 @@ def checkout_pkgm() -> bool:
     return True
 
 
+# 输入非空检测
 def checkout_null(target: str) -> bool:
-    # 非空检测
     if not target:
         raise ValidationError("", reason="啥都没输入啊")
 
 
+# 输入路径检测
 def checkout_path(_, current) -> bool:
     if not os.path.exists(current):
         raise ValidationError("", reason="这个路径无效啊")
@@ -84,6 +88,7 @@ def checkout_path(_, current) -> bool:
     return True
 
 
+# 输入端口检测
 def checkout_port(_, current) -> bool:
     checkout_null(current)
     
@@ -98,10 +103,12 @@ def checkout_port(_, current) -> bool:
     return True
 
 
-def ask(questions):
+# 单次提问简化
+def ask(questions) -> Any:
     return tuple(prompt((questions,)).values())[0]
 
 
+# 下载器
 def downloader(url: str, save_path: str) -> bool:
     # 利用rich的进度条来进行文件下载的显示，用httpx库来进行下载
     try:
@@ -133,6 +140,7 @@ def install_jdk() -> bool:
     return True
 
 
+# 检测架构
 def checkout_structure() -> str:
     match machine().lower():
         case "x86_64" | "amd64" | "x64":
@@ -143,6 +151,7 @@ def checkout_structure() -> str:
     return "unknown"
 
 
+# 安装QQ
 # @all_true
 def install_qq() -> bool:
     # 下载Linux版QQ
@@ -173,6 +182,7 @@ def install_qq() -> bool:
     return True
 
 
+# 安装NapCat
 # @all_true
 def install_napcat() -> bool:
     save_path = f"/tmp/napcat-{uuid4()}.zip"
@@ -211,13 +221,15 @@ def install_napcat() -> bool:
     return True
 
 
+# 安装LLOneBot
 def install_llonebot() -> bool:
     # TODO: LLOneBot实现
     ...
 
 
+# 检测环境
 # @all_true
-def env_check() -> bool:
+def checkout_env() -> bool:
     # 检查系统环境
     info("让我看看你环境正不正常啊……")
     if os.name == "posix":
@@ -245,18 +257,18 @@ def env_check() -> bool:
         return False
 
 
-def main():
-    # 主函数，用于引导NyxBot的安装
+# 主函数
+def main() -> None:
     rprint(Panel(
         "Warframe状态查询机器人，由著名架构师王小美开发，部署简易，更新勤奋，让我们追随她！\n请在安装过程中确保网络通畅啊！\n王小美个人博客地址：https://kingprimes.top",
         title="NyxBot引导脚本",
-        subtitle=f"版本：{__version__}",
-        border_style=" bold cyan"
+        subtitle="快速部署NyxBot",
+        border_style="bold cyan"
     ))
     if not ask(Confirm("choice", message="要开始吗？", default=True)):
         return
 
-    if not env_check():
+    if not checkout_env():
         return
     
     if not ask(Confirm("qqframe", message="有没有装QQ机器人框架？这是NyxBot和QQ对话的基础啊", default=True)):
@@ -295,4 +307,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
