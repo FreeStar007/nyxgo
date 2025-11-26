@@ -27,6 +27,7 @@ all_true = lambda _: lambda: True
 # 直接返回False的装饰器，同上
 all_false = lambda _: lambda: False
 pkgm = None # 初始化使用的包管理器判断变量
+structure = None # 初始化架构
 
 
 # 命令输入
@@ -72,6 +73,22 @@ def checkout_pkgm() -> bool:
         return False
         
     return True
+    
+    
+# 架构检测
+def checkout_structure() -> bool:
+    match machine().lower():
+        case "x86_64" | "amd64" | "x64":
+            info("x64架构")
+            structure = "x64"
+        case "arm64" | "aarch64" | "armv7l" | "armv8l":
+            info("arm架构")
+            structure = "arm"
+        case _:
+            error("不支持你这架构啊")
+            return False
+            
+    return True
 
 
 # 输入非空检测
@@ -109,18 +126,18 @@ def ask(questions) -> Any:
 
 
 # 下载器
-def downloader(url: str, save_path: str) -> bool:
+def downloader(url: str, saved_path: str, downloading_info: str) -> bool:
     # 利用rich的进度条来进行文件下载的显示，用httpx库来进行下载
     try:
         with httpx.stream("GET", url, follow_redirects=True) as response:
             with Progress() as progress:
-                task = progress.add_task("下载文件中", total=int(response.headers.get("Content-Length", 0)))
-                with open(save_path, "wb") as wb:
+                task = progress.add_task(downloading_info, total=int(response.headers.get("Content-Length", 0)))
+                with open(saved_path, "wb") as wb:
                     for chunk in response.iter_bytes():
                         wb.write(chunk)
                         progress.update(task, advance=len(chunk))
     except httpx.HTTPError:
-        error(f"下载失败了，要确保网络稳定啊！")
+        error(f"{saved_path}下载失败了，要确保网络稳定啊！")
         return False
 
     return True
@@ -138,17 +155,6 @@ def install_jdk() -> bool:
         
     info("openjdk21装完了")
     return True
-
-
-# 检测架构
-def checkout_structure() -> str:
-    match machine().lower():
-        case "x86_64" | "amd64" | "x64":
-            return "x64"
-        case "arm64" | "aarch64" | "armv7l" | "armv8l":
-            return "arm"
-
-    return "unknown"
 
 
 # 安装QQ
@@ -169,23 +175,23 @@ def install_qq() -> bool:
         }
     }
     target_pkg["yum"] = target_pkg["dnf"]
-    save_path = f"/tmp/linuxqq-{uuid4()}{target_pkg[pkgm]['suffix']}"
-    if not downloader(target_pkg[pkgm][checkout_structure()], save_path):
+    saved_path = f"/tmp/linuxqq-{uuid4()}{target_pkg[pkgm]['suffix']}"
+    if not downloader(target_pkg[pkgm][structure], saved_path, "Linux版QQ文件下载中"):
         return False
 
     info("我装一下它……")
-    if not shell(f"sudo {pkgm} install -y {save_path}", "我靠，装失败了，你自己装试试看"):
+    if not shell(f"sudo {pkgm} install -y {saved_path}", "我靠，装失败了，你自己装试试看"):
         return False
         
     info(f"Linux版QQ装完了")
-    remove(save_path, "临时文件移除失败了啊")
+    remove(saved_path, "临时文件移除失败了啊")
     return True
 
 
 # 安装NapCat
 # @all_true
 def install_napcat() -> bool:
-    save_path = f"/tmp/napcat-{uuid4()}.zip"
+    saved_path = f"/tmp/napcat-{uuid4()}.zip"
     info("开始帮你搞Xvfb和xauth……")
     target_pkg = {
         "apt": "xvfb xauth",
@@ -199,14 +205,14 @@ def install_napcat() -> bool:
     if not copy("./loadNapCat.cjs", "/opt/QQ/resources/app", "配置文件复制失败了啊，报告开发者吧"):
         return False
 
-    if not downloader("https://github.com/NapNeko/NapCatQQ/releases/download/v4.9.74/NapCat.Shell.zip", save_path):
+    if not downloader("https://github.com/NapNeko/NapCatQQ/releases/download/v4.9.74/NapCat.Shell.zip", saved_path, "NapCat文件下载中"):
         return False
 
     info("开始解压NapCat压缩包……")
     target_dir = "/opt/QQ/resources/app/napcat"
     if not os.path.exists(target_dir):
-        shutil.unpack_archive(save_path, f"{save_path}_done")
-        if not move(f"{save_path}_done", target_dir, "我靠，文件移动失败了，找开发者去"):
+        shutil.unpack_archive(saved_path, f"{saved_path}")
+        if not move(f"{saved_path}", target_dir, "我靠，文件移动失败了，找开发者去"):
             return False
     else:
         warn("目标目录已经有安排好的NapCat文件了，那我就不再解压了")
@@ -217,14 +223,8 @@ def install_napcat() -> bool:
         return False
 
     info("NapCat搞定，输入“xvfb-run -a qq --no-sandbox -q <你的QQ号>”来启动，会让你扫码登录，随后在它给的WebUI地址中配置一个WS服务器，消息格式选Array，然后自己输入一个端口，记住这个地址，例如6666端口地址就是ws://127.0.0.1:6666，然后在NyxBot的WebUI里面选择客户端模式去连接它就行了")
-    remove(save_path, "删除临时文件失败了啊")
+    remove(saved_path, "删除临时文件失败了啊")
     return True
-
-
-# 安装LLOneBot
-def install_llonebot() -> bool:
-    # TODO: LLOneBot实现
-    ...
 
 
 # 检测环境
@@ -234,10 +234,9 @@ def checkout_env() -> bool:
     info("让我看看你环境正不正常啊……")
     if os.name == "posix":
         if not checkout_pkgm():
-            return
+            return False
             
-        if checkout_structure() == "unknown":
-            error("暂不支持你这架构啊")
+        if not checkout_structure():
             return False
             
         if not (os.path.exists("/usr/bin/java") or os.path.exists("/bin/java")):
@@ -273,7 +272,7 @@ def main() -> None:
     
     if not ask(Confirm("qqframe", message="有没有装QQ机器人框架？这是NyxBot和QQ对话的基础啊", default=True)):
         info("那你就选一下，我帮你装一个")
-        match ask(List("frame", message="选择一个QQ机器人框架（推荐NapCat）", choices=["NapCat", "LLOneBot"])):
+        match ask(List("frame", message="选择一个QQ机器人框架（推荐NapCat）", choices=["NapCat"])):
             case "NapCat":
                 if not install_napcat():
                     return
