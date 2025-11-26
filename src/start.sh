@@ -3,32 +3,30 @@ if [ "$EUID" -eq 0 ]; then
     echo "不能以root用户的身份运行啊！"
     exit
 fi
-NUSER=$USER
-BASE="/bin"
-USER_BASE="/usr/bin"
-PKGM=""
-if [ -f "$BASE/apt" -o -f "$USER_BASE/apt" ]; then
-    PKGM="apt"
-elif [ -f "$BASE/dnf" -o -f "$USER_BASE/dnf" ]; then
-    PKGM="dnf"
-elif [ -f "$BASE/yum" -o -f "$USER_BASE/yum" ]; then
-    PKGM="yum"
+nuser=$USER
+pkgm=""
+if command -v apt &> /dev/null; then
+    pkgm="apt"
+elif command -v dnf &> /dev/null; then
+    pkgm="dnf"
+elif command -v yum &> /dev/null; then
+    pkgm="yum"
 else
     echo "暂不支持的系统"
     exit
 fi
-TEMP_PYTHON=/usr/bin/python3
-if ! $TEMP_PYTHON -m venv --help > /dev/null 2>&1; then
-    echo "安装python3-venv……"
-    sudo $PKGM install python3-venv -y
-fi
-TARGET=/usr/lib/nyxbot_venv
-TEMP_HOME=$TARGET/bin
+TEMP_PYTHON="/usr/bin/python3"
+TARGET="/usr/lib/nyxbot_venv"
+TEMP_HOME="$TARGET/bin"
 if [ ! -d "$TARGET" ]; then
+    if ! "$TEMP_PYTHON" -m venv --help &> /dev/null; then
+        echo "安装python3-venv……"
+        sudo "$pkgm" install -y python3-venv
+    fi
     echo "初始化虚拟环境……"
-    sudo $TEMP_PYTHON -m venv $TARGET
-    sudo chown -R $NUSER:$NUSER $TARGET
-    sudo chmod -R +x $TARGET
-    $TEMP_HOME/pip3 install -r requirements.txt -i https://mirrors.tuna.tsinghua.edu.cn/pypi/web/simple
+    sudo "$TEMP_PYTHON" -m venv "$TARGET"
+    sudo chown -R "$nuser:$nuser" "$TARGET"
+    sudo chmod -R +x "$TARGET"
+    "$TEMP_HOME/pip3" install -r requirements.txt -i https://mirrors.tuna.tsinghua.edu.cn/pypi/web/simple
 fi
-$TEMP_HOME/python3 ./core.py
+"$TEMP_HOME/python3" ./core.py
