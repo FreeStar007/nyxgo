@@ -3,7 +3,6 @@ if [ "$EUID" -eq 0 ]; then
     echo "不能以root用户的身份运行啊！"
     exit
 fi
-nuser=$USER
 pkgm=""
 if command -v apt &> /dev/null; then
     pkgm="apt"
@@ -25,7 +24,7 @@ if [ ! -d "$TARGET" ]; then
     fi
     echo "初始化虚拟环境……"
     sudo "$TEMP_PYTHON" -m venv "$TARGET"
-    sudo chown -R "$nuser:$nuser" "$TARGET"
+    sudo chown -R "$USER:$USER" "$TARGET"
     sudo chmod -R +x "$TARGET"
     "$TEMP_HOME/pip3" install -r requirements.txt -i https://mirrors.tuna.tsinghua.edu.cn/pypi/web/simple
 fi
