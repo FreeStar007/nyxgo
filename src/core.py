@@ -126,8 +126,8 @@ def checkout_port(_, current) -> bool:
 
 
 # 单次提问简化
-def ask(questions) -> Any:
-    return tuple(prompt((questions,)).values())[0]
+def ask(question) -> Any:
+    return tuple(prompt((question,)).values())[0]
 
 
 # 下载器

@@ -16,7 +16,7 @@ else
     exit
 fi
 TEMP_PYTHON="/usr/bin/python3"
-TARGET="/usr/lib/nyxbot_venv"
+TARGET="/usr/lib/nyxgo_venv"
 TEMP_HOME="$TARGET/bin"
 if [ ! -d "$TARGET" ]; then
     echo "初始化运行环境……"
