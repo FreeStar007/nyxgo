@@ -96,7 +96,7 @@ def checkout_structure() -> bool:
     return True
 
 
-# 输入非空检测
+# 检测输入内容
 def checkout_null(target: str) -> bool:
     if not target:
         raise ValidationError("", reason="啥都没输入啊")
@@ -110,7 +110,7 @@ def checkout_path(_, current) -> bool:
     return True
 
 
-# 输入端口检测
+# 检测输入端口
 def checkout_port(_, current) -> bool:
     checkout_null(current)
     
@@ -162,11 +162,10 @@ def install_jdk() -> bool:
     return True
 
 
-# 安装QQ
+# 安装Linux版QQ
 # @all_true
 def install_qq() -> bool:
-    # 下载Linux版QQ
-    info("开始帮你搞Linux版的QQ……")
+    info("开始帮你搞Linux版QQ……")
     target_pkg = source["qq"]
     target_pkg["yum"] = target_pkg["dnf"]
     saved_path = f"/tmp/linuxqq-{uuid4()}{target_pkg[pkgm]['suffix']}"
@@ -277,15 +276,12 @@ def main() -> None:
     
     if not ask(Confirm("qqframe", message="有没有装QQ机器人框架？这是NyxBot和QQ对话的基础啊", default=True)):
         info("那你就选一下，我帮你装一个")
-        match ask(List("frame", message="选择一个QQ机器人框架（推荐NapCat）", choices=["NapCat"])):
+        match ask(List("frame", message="选择一个QQ机器人框架（推荐NapCat）", choices=(
+            "NapCat",
+            ))):
             case "NapCat":
                 if not install_napcat():
                     return
-
-            case "LLOneBot":
-                if not install_llonebot():
-                    return
-
             case _:
                 error("出现了点让你我始料不及的情况啊，报告一下开发者吧")
                 return
@@ -294,12 +290,12 @@ def main() -> None:
     nyxbot_path = ask(Path("nyxbot_path", message="请输入NyxBot.jar的路径", validate=checkout_path))
     info("配置NyxBot……")
     choices = ask(Checkbox("functions", message="请选择你要配置的选项", choices=(
-        "NyxBot启动时的端口号",
-    )))
+        "启动时的端口号",
+        )))
     command = ["java", "-jar", nyxbot_path]
     for choice in choices:
         match choice:
-            case "NyxBot启动时的端口号":
+            case "启动时的端口号":
                 command.append(f"--server.port={ask(Text('nyxbot_port', message='请输入NyxBot启动时端口号（默认8080）', default=8080, validate=checkout_port))}")
             case _:
                 pass
