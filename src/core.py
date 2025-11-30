@@ -2,6 +2,7 @@
 import os
 import httpx
 import json
+import yaml
 import subprocess as sp
 import shutil
 from typing import Any
@@ -283,7 +284,6 @@ def main() -> None:
                 if not install_napcat():
                     return
             case _:
-                error("出现了点让你我始料不及的情况啊，报告一下开发者吧")
                 return
 
     ask(Text("_", message="这里我会等你多开终端启动好QQ机器人框架，好了就随便输入点什么，然后继续配置NyxBot吧"))
@@ -291,14 +291,37 @@ def main() -> None:
     info("配置NyxBot……")
     choices = ask(Checkbox("functions", message="请选择你要配置的选项", choices=(
         "启动时的端口号",
+        "启动时的连接模式"
         )))
     command = ["java", "-jar", nyxbot_path]
     for choice in choices:
         match choice:
             case "启动时的端口号":
                 command.append(f"--server.port={ask(Text('nyxbot_port', message='请输入NyxBot启动时端口号（默认8080）', default=8080, validate=checkout_port))}")
+            case "启动时的连接模式":
+                locate_file = "locate.yaml"
+                locate_dir = "./data"
+                if not os.path.exists(locate_dir):
+                    error("设置这一项前请先启动一次以初始化NyxBot")
+                    return
+                match ask(List("nyxbot_mode", message="请选择NyxBot启动时连接模式（推荐Client模式）", choices=(
+                    "Server模式",
+                    "Client模式"
+                    ))):
+                    case "Server模式":
+                        if not copy(f"./{locate_file}", locate_dir, "意外啊你这"):
+                            return
+                    case "Client模式":
+                        with open(locate_file, "r") as r:
+                            locate_data = yaml.safe_load(r)
+                            locate_data["isServerOrClient"] = False
+
+                        with open(f"{locate_dir}/{locate_file}", "w") as w:
+                            yaml.safe_dump(locate_data, w)
+                    case _:
+                        return
             case _:
-                pass
+                return
 
     info("配置完成，启动NyxBot……")
     info("在启动完成后可以根据其终端的输出查看WebUI（也就是配置NyxBot的界面）地址和端口号以及账号密码，记得牢记哦！")
