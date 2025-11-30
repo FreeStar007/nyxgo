@@ -33,6 +33,9 @@ with open("./source.json", "r") as r:
 
 pkgm = None # 初始化使用的包管理器判断变量
 structure = None # 初始化架构
+locate_file = "locate.yaml" # 定位文件
+locate_dir = "./data" # 定位文件夹
+locate_target = f"{locate_dir}/{locate_file}"
 
 
 # 命令输入
@@ -97,6 +100,36 @@ def checkout_structure() -> bool:
     return True
 
 
+# 检测定位文件
+def checkout_locate() -> bool:
+    global locate_dir, locate_file, locate_target
+    if not os.path.exists(locate_target):
+        error("设置这一项前请先启动一次以初始化NyxBot")
+        return False
+
+    return True
+
+
+# 编辑定位文件
+def edit_locate(key, value) -> bool:
+    global locate_dir, locate_file, locate_target
+    if checkout_locate():
+        locate_file = locate_target
+
+    try:
+        with open(locate_file, "r") as r:
+            locate_data = yaml.safe_load(r)
+            locate_data[key] = value
+            
+        with open(locate_target, "w") as w:
+            yaml.safe_dump(locate_data, w)
+    except (OSError, FileNotFoundError) as e:
+        error(f"配置文件编辑失败了啊，报告开发者吧：{e}")
+        return False
+
+    return True
+
+
 # 检测输入内容
 def checkout_null(target: str) -> bool:
     if not target:
@@ -125,6 +158,17 @@ def checkout_port(_, current) -> bool:
     
     return True
 
+
+# 检测URL
+def checkout_url(_, current) -> bool:
+    checkout_null(current)
+    
+    # 检查是否为以http/https/ws/wss开头
+    if not current.startswith(("http://", "https://", "ws://", "wss://")):
+        raise ValidationError("", reason="URL必须以http/https/ws/wss开头啊")
+
+    return True
+    
 
 # 单次提问简化
 def ask(question) -> Any:
@@ -291,7 +335,10 @@ def main() -> None:
     info("配置NyxBot……")
     choices = ask(Checkbox("functions", message="请选择你要配置的选项", choices=(
         "启动时的端口号",
-        "启动时的连接模式"
+        "启动时的连接模式",
+        "连接时的目标URL",
+        "被连接时的目标URL的端点",
+        "被连接时的目标URL的token"
         )))
     command = ["java", "-jar", nyxbot_path]
     for choice in choices:
@@ -299,27 +346,39 @@ def main() -> None:
             case "启动时的端口号":
                 command.append(f"--server.port={ask(Text('nyxbot_port', message='请输入NyxBot启动时端口号（默认8080）', default=8080, validate=checkout_port))}")
             case "启动时的连接模式":
-                locate_file = "locate.yaml"
-                locate_dir = "./data"
-                if not os.path.exists(locate_dir):
-                    error("设置这一项前请先启动一次以初始化NyxBot")
+                if not checkout_locate():
                     return
+
                 match ask(List("nyxbot_mode", message="请选择NyxBot启动时连接模式（推荐Client模式）", choices=(
                     "Server模式",
                     "Client模式"
                     ))):
                     case "Server模式":
-                        if not copy(f"./{locate_file}", locate_dir, "意外啊你这"):
+                        if not copy(f"./{locate_file}", locate_dir, "配置文件复制失败了啊，报告开发者吧"):
                             return
                     case "Client模式":
-                        with open(locate_file, "r") as r:
-                            locate_data = yaml.safe_load(r)
-                            locate_data["isServerOrClient"] = False
-
-                        with open(f"{locate_dir}/{locate_file}", "w") as w:
-                            yaml.safe_dump(locate_data, w)
+                        if not edit_locate("isServerOrClient", False):
+                            return
                     case _:
                         return
+            case "连接时的目标URL":
+                    if not checkout_locate():
+                        return
+
+                    if not edit_locate("wsClientUrl", ask(Text("wsClientUrl", message="请输入连接时的目标URL（默认ws://127.0.0.1:8081）", default="ws://127.0.0.1:8081", validate=checkout_url))):
+                        return
+            case "被连接时的目标URL的端点":
+                if not checkout_locate():
+                    return
+
+                if not edit_locate("wsServerUrl", ask(Text("wsServerUrl", message="请输入被连接时的目标URL端点（默认/ws/shiro，那么连接NyxBot时URL就是ws://127.0.0.1:<你启动时配置的端口>/ws/shiro）", default="/ws/shiro"))):
+                    return
+            case "被连接时的目标URL的token":
+                if not checkout_locate():
+                    return
+
+                if not edit_locate("token", ask(Text("token", message="请输入被连接时的token（默认为空）"))):
+                    return
             case _:
                 return
 
