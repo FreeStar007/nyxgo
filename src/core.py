@@ -329,7 +329,7 @@ def main() -> None:
                 return
 
     ask(Text("_", message="这里我会等你多开终端启动好QQ机器人框架，好了就随便输入点什么，然后继续配置NyxBot吧"))
-    nyxbot_path = ask(Path("nyxbot_path", message="请输入NyxBot.jar的路径", validate=checkout_path))
+    nyxbot_path = ask(Path("nyxbot_path", message="请输入NyxBot.jar的路径（默认./NyxBot.jar）", default="./NyxBot.jar", validate=checkout_path))
     info("配置NyxBot……")
     choices = ask(Checkbox("functions", message="请选择你要配置的选项（默认不需要勾选，到WebUI里面配置就行）", choices=(
         Choices.STARTING_PORT.value,
