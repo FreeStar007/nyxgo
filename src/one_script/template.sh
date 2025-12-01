@@ -7,8 +7,7 @@ readonly NUSER=$USER
 readonly TEMP_PYTHON="/usr/bin/python3"
 readonly TARGET="/usr/lib/nyxgo_venv"
 readonly TEMP_HOME="$TARGET/bin"
-readonly CORE_DIR="/tmp/nyxgo"
-readonly CORE_TEMP="./nyxgo"
+readonly CORE_DIR="./nyxgo"
 readonly CORE_FILE="./core.py"
 pkgm=""
 if command -v apt &> /dev/null; then
@@ -42,13 +41,8 @@ if [ ! -d "$TARGET" ]; then
 fi
 echo "启动脚本……"
 if [ ! -d "$CORE_DIR" ]; then
-    tail -n +55 "$0" | tar -xzf -
-    mv "$CORE_TEMP" "$CORE_DIR"
-    cd "$CORE_DIR"
-    chmod +x "$CORE_FILE"
-    cd ..
+    tail -n +49 "$0" | tar -xzf -
 fi
 cd "$CORE_DIR"
 "$TEMP_HOME/python3" "$CORE_FILE"
-rm -rf "$CORE_DIR"
 exit 0
