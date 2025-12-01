@@ -4,6 +4,9 @@ if [ "$EUID" -eq 0 ]; then
     exit
 fi
 NUSER=$USER
+TEMP_PYTHON="/usr/bin/python3"
+TARGET="/usr/lib/nyxgo_venv"
+TEMP_HOME="$TARGET/bin"
 pkgm=""
 if command -v apt &> /dev/null; then
     pkgm="apt"
@@ -15,9 +18,6 @@ else
     echo "暂不支持的系统"
     exit
 fi
-TEMP_PYTHON="/usr/bin/python3"
-TARGET="/usr/lib/nyxgo_venv"
-TEMP_HOME="$TARGET/bin"
 if [ ! -d "$TARGET" ]; then
     echo "初始化运行环境……"
     if ! command -v git &> /dev/null; then
