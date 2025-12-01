@@ -138,10 +138,10 @@ def checkout_null(target: str) -> bool:
         raise ValidationError("", reason="啥都没输入啊")
 
 
-# 输入路径检测
-def checkout_path(_, current) -> bool:
-    if not os.path.exists(current):
-        raise ValidationError("", reason="这个路径无效啊")
+# 输入文件检测
+def checkout_file(_, current) -> bool:
+    if not os.path.exists(current) or os.path.isdir(current):
+        raise ValidationError("", reason="这个路径无效啊，而且不能是文件夹")
         
     return True
 
@@ -329,7 +329,7 @@ def main() -> None:
                 return
 
     ask(Text("_", message="这里我会等你多开终端启动好QQ机器人框架，好了就随便输入点什么，然后继续配置NyxBot吧"))
-    nyxbot_path = ask(Path("nyxbot_path", message="请输入NyxBot.jar的路径", validate=checkout_path))
+    nyxbot_path = ask(Path("nyxbot_path", message="请输入NyxBot.jar的路径", validate=checkout_file))
     info("配置NyxBot……")
     choices = ask(Checkbox("functions", message="请选择你要配置的选项（默认不需要勾选，到WebUI里面配置就行）", choices=(
         Choices.STARTING_PORT.value,
@@ -360,7 +360,7 @@ def main() -> None:
                     if not edit_locate("wsClientUrl", ask(Text("wsClientUrl", message=f"请输入{Choices.CONNECTION_URL.value}（默认ws://127.0.0.1:8081）", default="ws://127.0.0.1:8081", validate=checkout_url))):
                         return
             case Choices.END_POINT.value:
-                if not edit_locate("wsServerUrl", ask(Text("wsServerUrl", message=f"请输入{Choices.END_POINT.value}（默认/ws/shiro，那么连接NyxBot时URL就是ws://127.0.0.1:<你启动时配置的端口>/ws/shiro）", default="/ws/shiro"))):
+                if not edit_locate("wsServerUrl", ask(Text("wsServerUrl", message=f"请输入{Choices.END_POINT.value}（默认/ws/shiro，那么客户端连接时的URL就是ws://127.0.0.1:<启动时的端口>/ws/shiro）", default="/ws/shiro"))):
                     return
             case Choices.TOKEN.value:
                 if not edit_locate("token", ask(Text("token", message=f"请输入{Choices.TOKEN.value}（默认为空）"))):
