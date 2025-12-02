@@ -372,7 +372,7 @@ def main() -> None:
                 return
 
     ask(Text("_", message="这里我会等你多开终端启动好QQ机器人框架，好了就随便输入点什么，然后继续配置NyxBot吧"))
-    starter_command.append(ask(Path("nyxbot_path", message="请输入NyxBot.jar的路径", validate=checkout_file)))
+    starter_command.append(ask(Path("nyxbot_path", message=f"请输入NyxBot.jar的路径（当前位于{os.getcwd()}）", validate=checkout_file)))
     if not configure_nyxbot():
         error("配置过程发生错误")
         return
