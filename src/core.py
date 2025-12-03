@@ -276,7 +276,7 @@ def checkout_env() -> bool:
         info("环境没问题，继续")
         return True
     else:
-        error("目前仅支持Debian系统啊也就是用apt包管理器的，等我再开发其它的吧")
+        error("目前仅支持Debian系/RedHat系系统啊也就是用apt/dnf/yum包管理器的，等我再开发其它的吧")
         return False
 
 
