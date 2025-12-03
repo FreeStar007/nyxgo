@@ -97,8 +97,8 @@ def checkout_structure() -> bool:
     global structure
     match machine().lower():
         case "x86_64" | "amd64" | "x64":
-            info("x64架构")
-            structure = "x64"
+            info("x86架构")
+            structure = "x86"
         case "arm64" | "aarch64" | "armv7l" | "armv8l":
             info("arm架构")
             structure = "arm"

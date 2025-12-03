@@ -1,12 +1,12 @@
 {
     "qq": {
         "apt": {
-            "x64": "https://dldir1v6.qq.com/qqfile/qq/QQNT/Linux/QQ_3.2.21_251114_amd64_01.deb",
+            "x86": "https://dldir1v6.qq.com/qqfile/qq/QQNT/Linux/QQ_3.2.21_251114_amd64_01.deb",
             "arm": "https://dldir1v6.qq.com/qqfile/qq/QQNT/Linux/QQ_3.2.21_251114_arm64_01.deb",
             "suffix": ".deb"
         },
         "dnf": {
-            "x64": "https://dldir1v6.qq.com/qqfile/qq/QQNT/Linux/QQ_3.2.21_251114_x86_64_01.rpm",
+            "x86": "https://dldir1v6.qq.com/qqfile/qq/QQNT/Linux/QQ_3.2.21_251114_x86_64_01.rpm",
             "arm": "https://dldir1v6.qq.com/qqfile/qq/QQNT/Linux/QQ_3.2.21_251114_aarch64_01.rpm",
             "suffix": ".rpm"
         }
