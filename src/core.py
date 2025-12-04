@@ -5,6 +5,7 @@ import json
 import yaml
 import subprocess as sp
 import shutil
+from time import time
 from typing import Any
 from enum import Enum
 from datetime import datetime
@@ -27,8 +28,8 @@ class Choices(Enum):
     CONNECTION_URL = "启动时连接的URL"
     END_POINT = "启动时被连接的URL端点"
     TOKEN = "启动时连接/被连接的token"
-    SERVER_MODE = "Server模式"
-    CLIENT_MODE = "Client模式"
+    SERVER_MODE = "服务端模式"
+    CLIENT_MODE = "客户端模式"
 
 
 # 日志函数
@@ -90,8 +91,8 @@ def checkout_pkgm() -> bool:
         return False
         
     return True
-    
-    
+
+
 # 检测架构
 def checkout_structure() -> bool:
     global structure
@@ -147,6 +148,26 @@ def checkout_url(_, current) -> bool:
         raise ValidationError("", reason="URL必须以http/https/ws/wss开头啊")
 
     return True
+    
+    
+def github_proxy(github_url) -> str:
+    info("开始测试最快的代理服务器……")
+    speed = {}
+    for proxy in source["proxies"]:
+        start = time()
+        try:
+            if httpx.head(f"{proxy}/{github_url}", follow_redirects=True).status_code < 400:
+                speed[proxy] = time() - start
+        except httpx.ConnectError:
+            pass
+        
+    if not speed:
+        warn("代理服务器用不了啊，只能采用其它方案了")
+        return ""
+        
+    choice = min(speed, key=speed.get)
+    info(f"使用{choice}，延时是{speed[choice]}ms")
+    return f"{choice}/{github_url}"
 
 
 # 单次提问简化
@@ -166,7 +187,7 @@ def downloader(url: str, saved_path: str, downloading_info: str) -> bool:
                         wb.write(chunk)
                         progress.update(task, advance=len(chunk))
     except httpx.HTTPError:
-        error(f"{saved_path}下载失败了，要确保网络稳定啊！")
+        error(f"{saved_path}下载失败了")
         return False
 
     return True
@@ -219,19 +240,8 @@ def install_napcat() -> bool:
     if not copy("./loadNapCat.cjs", "/opt/QQ/resources/app", "配置文件复制失败了啊，报告开发者吧"):
         return False
 
-    if not downloader(source["napcat"], saved_path, "NapCat文件下载中……"):
-        if not remove(saved_path, "缓存文件删除失败，我重新命名下"):
-            saved_path = f"/tmp/napcat-{uuid4()}.zip"
-
-        warn("我试试git国内源……")
-        target_git = f"/tmp/napcat-git-{uuid4()}"
-        if shell(f"git clone {source['napcat_git']} {target_git}", "git国内源失败，联系开发者吧"):
-            if not move(f"{target_git}/NapCat.Shell.zip", saved_path, "文件移动失败了，得找开发者啊"):
-                return False
-
-            remove(target_git, "文件夹删除失败了，不过无伤大雅", append=" -r")
-        else:
-            return False
+    if not downloader(github_proxy(source["napcat"]), saved_path, "NapCat文件下载中……"):
+        return False
 
     info("开始解压NapCat压缩包……")
     target_dir = "/opt/QQ/resources/app/napcat"
@@ -247,7 +257,7 @@ def install_napcat() -> bool:
     if not shell(r"""sudo sed -i 's/"main": ".*\/index.js"/"main": ".\/loadNapCat.cjs"/' /opt/QQ/resources/app/package.json""", "package.json处理失败了啊", complex_mode=True):
         return False
 
-    info("NapCat搞定，输入“xvfb-run -a qq --no-sandbox -q <你的QQ号>”来启动，会让你扫码登录，随后在它给的WebUI地址中配置一个WS服务器，消息格式选Array，然后自己输入一个端口，记住这个地址，例如6666端口地址就是ws://127.0.0.1:6666，然后在NyxBot的WebUI里面选择客户端模式去连接它就行了")
+    info(f"NapCat搞定，输入“xvfb-run -a qq --no-sandbox -q <你的QQ号>”来启动，会让你扫码登录，随后在它给的WebUI地址中配置一个WS服务器，消息格式选Array，然后自己输入一个端口，记住这个地址，例如6666端口地址就是ws://127.0.0.1:6666，然后在NyxBot配置界面的{Choices.CLIENT_MODE}再设置{Choices.CONNECTION_URL}去连接它就行了")
     remove(saved_path, "删除临时文件失败了啊")
     return True
 
@@ -318,7 +328,7 @@ def configure_nyxbot() -> bool:
             case Choices.STARTING_PORT.value:
                 starter_command.append(f"--server.port={ask(Text('nyxbot_port', message=f'请输入{Choices.STARTING_PORT.value}（默认8080）', default=8080, validate=checkout_port))}")
             case Choices.STARTING_MODE.value:
-                match ask(List("nyxbot_mode", message=f"请选择{Choices.STARTING_MODE.value}（推荐Client模式）", choices=(
+                match ask(List("nyxbot_mode", message=f"请选择{Choices.STARTING_MODE.value}（推荐客户端模式）", choices=(
                     Choices.SERVER_MODE.value,
                     Choices.CLIENT_MODE.value
                     ))):
