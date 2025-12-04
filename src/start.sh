@@ -1,10 +1,14 @@
 #!/bin/bash
 if [ "$EUID" -eq 0 ]; then
     echo "不能以root用户的身份运行啊！"
-    exit
+    exit 1
 fi
 readonly NUSER=$USER
-readonly TEMP_PYTHON="$(command -v python3)"
+readonly SYSTEM_PYTHON="$(command -v python3)"
+if [ -z "$SYSTEM_PYTHON" ]; then
+    echo "环境缺少python3"
+    exit 1
+fi
 readonly TARGET="/usr/lib/nyxgo_venv"
 readonly TEMP_HOME="$TARGET/bin"
 pkgm=""
@@ -24,15 +28,15 @@ if [ ! -d "$TARGET" ]; then
         echo "安装git……"
         sudo "$pkgm" install -y git
     fi
-    if ! "$TEMP_PYTHON" -m pip --help &> /dev/null; then
+    if ! "$SYSTEM_PYTHON" -m pip --help &> /dev/null; then
         echo "安装pip3……"
         sudo "$pkgm" install -y python3-pip
     fi
-    if ! "$TEMP_PYTHON" -m venv --help &> /dev/null; then
+    if ! "$SYSTEM_PYTHON" -m venv --help &> /dev/null; then
         echo "安装venv……"
         sudo "$pkgm" install -y python3-venv
     fi
-    sudo "$TEMP_PYTHON" -m venv "$TARGET"
+    sudo "$SYSTEM_PYTHON" -m venv "$TARGET"
     sudo chown -R "$NUSER:$NUSER" "$TARGET"
     sudo chmod -R +x "$TARGET"
     "$TEMP_HOME/pip3" install -r ./requirements.txt -i https://mirrors.tuna.tsinghua.edu.cn/pypi/web/simple
