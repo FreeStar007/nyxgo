@@ -167,7 +167,7 @@ def github_proxy(github_url) -> str:
             if httpx.head(f"{proxy}/{github_url}", follow_redirects=True).status_code < 400:
                 speed[proxy] = time_ms() - start
                 continue
-        except httpx.RequestError:
+        except (httpx.RequestError, httpx.HTTPError):
             pass
             
         error(f"代理服务器{proxy}请求失败")
@@ -197,8 +197,8 @@ def downloader(url: str, saved_path: str, downloading_info: str) -> bool:
                     for chunk in response.iter_bytes():
                         wb.write(chunk)
                         progress.update(task, advance=len(chunk))
-    except httpx.HTTPError:
-        error(f"{saved_path}下载失败了")
+    except (httpx.RequestError, httpx.HTTPError):
+        error(f"{saved_path}下载失败了，也许是网络问题")
         return False
 
     return True
