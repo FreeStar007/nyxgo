@@ -165,7 +165,7 @@ def github_proxy(github_url) -> str:
         try:
             if httpx.head(f"{proxy}/{github_url}", follow_redirects=True).status_code < 400:
                 speed[proxy] = time_ms() - start
-        except (httpx.ConnectError, httpx.ConnectTimeout):
+        except httpx.RequestError:
             pass
         
     if not speed:
