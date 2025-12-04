@@ -205,21 +205,24 @@ def downloader(url: str, saved_path: str, downloading_info: str) -> bool:
 
 
 def install_jdk() -> bool:
+    info("开始帮你搞OpenJDK21")
     target_pkg = {
         "apt": "openjdk-21-jdk",
         "dnf": "java-21-openjdk"
     }
     target_pkg["yum"] = target_pkg["dnf"]
-    if not shell(f"sudo {pkgm} install -y {target_pkg[pkgm]}", "openjdk21安装失败了，只能你自己先装上再重启脚本了"):
+    info("开始安装OpenJDK21……")
+    if not shell(f"sudo {pkgm} install -y {target_pkg[pkgm]}", "OpenJDK21安装失败了，只能你自己先装上再重启脚本了"):
         return False
         
-    info("openjdk21装完了")
+    info("OpenJDK21装完了")
     return True
 
 
 def install_nyxbot() -> bool:
     info("开始帮你搞NyxBot.jar……")
     saved_path = "./NyxBot.jar"
+    info("开始下载NyxBot.jar……")
     if not downloader(github_proxy(source["nyxbot"]), saved_path, "NyxBot.jar下载中……"):
         return Fasle
 
@@ -233,6 +236,7 @@ def install_qq() -> bool:
     target_pkg = source["qq"]
     target_pkg["yum"] = target_pkg["dnf"]
     saved_path = f"/tmp/linuxqq-{uuid4()}{target_pkg[pkgm]['suffix']}"
+    info("开始下载Linux版QQ文件……")
     if not downloader(target_pkg[pkgm][structure], saved_path, "Linux版QQ文件下载中……"):
         return False
 
@@ -247,8 +251,9 @@ def install_qq() -> bool:
 
 # 安装NapCat
 def install_napcat() -> bool:
+    info("开始帮你搞NapCat……")
     saved_path = f"/tmp/napcat-{uuid4()}.zip"
-    info("开始帮你搞Xvfb和xauth……")
+    info("开始安装Xvfb和xauth……")
     target_pkg = {
         "apt": "xvfb xauth",
         "dnf": "xorg-x11-server-Xvfb xorg-x11-xauth"
@@ -257,11 +262,11 @@ def install_napcat() -> bool:
     if not shell(f"sudo {pkgm} install -y {target_pkg[pkgm]}", "安装xvfb和xauth时失败了，只能靠你自己了或者求助吧"):
         return False
         
-    info("开始帮你搞NapCat……")
     info("开始复制配置文件……")
     if not copy("./loadNapCat.cjs", "/opt/QQ/resources/app", "配置文件复制失败了啊，报告开发者吧"):
         return False
-
+    
+    info("开始下载NapCat文件……")
     if not downloader(github_proxy(source["napcat"]), saved_path, "NapCat文件下载中……"):
         return False
 
