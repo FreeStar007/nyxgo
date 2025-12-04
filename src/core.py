@@ -166,14 +166,14 @@ def github_proxy(github_url) -> str:
             if httpx.head(f"{proxy}/{github_url}", follow_redirects=True).status_code < 400:
                 speed[proxy] = time_ms() - start
         except httpx.RequestError:
-            pass
+            error(f"代理服务器{proxy}请求失败")
         
     if not speed:
         warn("代理服务器用不了啊，只能采用其它方案了")
         return ""
         
     choice = min(speed, key=speed.get)
-    info(f"使用{choice}，延时是{speed[choice]}ms")
+    info(f"使用{choice}作为代理服务器，延时为{speed[choice]}ms")
     return f"{choice}/{github_url}"
 
 
