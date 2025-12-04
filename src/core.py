@@ -119,6 +119,7 @@ def checkout_null(target) -> bool:
 
 # 输入文件检测
 def checkout_file(_, current) -> bool:
+    checknull(current)
     if current == "-":
         print()
         if not install_nyxbot():
@@ -135,7 +136,6 @@ def checkout_file(_, current) -> bool:
 # 检测输入端口
 def checkout_port(_, current) -> bool:
     checkout_null(current)
-    
     # 检查是否为数字
     if not current.isdigit():
         raise ValidationError("", reason="端口号必须是数字啊")
@@ -150,7 +150,6 @@ def checkout_port(_, current) -> bool:
 # 检测URL
 def checkout_url(_, current) -> bool:
     checkout_null(current)
-    
     # 检查是否为以http/https/ws/wss开头
     if not current.startswith(("http://", "https://", "ws://", "wss://")):
         raise ValidationError("", reason="URL必须以http/https/ws/wss开头啊")
