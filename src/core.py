@@ -158,22 +158,25 @@ def checkout_url(_, current) -> bool:
     
     
 def github_proxy(github_url) -> str:
-    info("开始测试最快的代理服务器……")
+    info("开始选择延时最低的代理服务器……")
     speed = {}
     for proxy in source["proxies"]:
         start = time_ms()
         try:
             if httpx.head(f"{proxy}/{github_url}", follow_redirects=True).status_code < 400:
                 speed[proxy] = time_ms() - start
+                continue
         except httpx.RequestError:
-            error(f"代理服务器{proxy}请求失败")
+            pass
+            
+        error(f"代理服务器{proxy}请求失败")
         
     if not speed:
         warn("代理服务器用不了啊，只能采用其它方案了")
         return ""
         
     choice = min(speed, key=speed.get)
-    info(f"使用{choice}作为代理服务器，延时为{speed[choice]}ms")
+    info(f"使用{choice}作为代理服务器，延时为{speed[choice]}ms，一共可用代理服务器数量为{len(speed)}/{len(source['proxies'])}")
     return f"{choice}/{github_url}"
 
 
@@ -254,6 +257,7 @@ def install_napcat() -> bool:
         return False
         
     info("开始帮你搞NapCat……")
+    info("开始复制配置文件……")
     if not copy("./loadNapCat.cjs", "/opt/QQ/resources/app", "配置文件复制失败了啊，报告开发者吧"):
         return False
 
@@ -274,7 +278,7 @@ def install_napcat() -> bool:
     if not shell(r"""sudo sed -i 's/"main": ".*\/index.js"/"main": ".\/loadNapCat.cjs"/' /opt/QQ/resources/app/package.json""", "package.json处理失败了啊", complex_mode=True):
         return False
 
-    info(f"NapCat搞定，输入“xvfb-run -a qq --no-sandbox -q <你的QQ号>”来启动，会让你扫码登录，随后在它给的WebUI地址中配置一个WS服务器，消息格式选Array，然后自己输入一个端口，记住这个地址，例如6666端口地址就是ws://127.0.0.1:6666，然后在NyxBot配置界面的{Choices.CLIENT_MODE}再设置{Choices.CONNECTION_URL}去连接它就行了")
+    info(f"NapCat搞定，输入“xvfb-run -a qq --no-sandbox -q <你的QQ号>”来启动，会让你扫码登录，随后在它给的WebUI地址中配置一个WS服务器，消息格式选Array，然后自己输入一个端口，记住这个地址，例如6666端口地址就是ws://127.0.0.1:6666，然后在NyxBot配置界面的{Choices.STARTING_MODE.value}选择{Choices.CLIENT_MODE}再设置{Choices.CONNECTION_URL.value}去连接NapCat的WS服务器地址就行了")
     remove(saved_path, "删除临时文件失败了啊")
     return True
 
