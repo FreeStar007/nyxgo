@@ -190,7 +190,7 @@ def ask(question) -> Any:
 def downloader(url: str, saved_path: str, downloading_info: str) -> bool:
     # 利用rich的进度条来进行文件下载的显示，用httpx库来进行下载
     try:
-        with httpx.stream("GET", url, follow_redirects=True) as response:
+        with httpx.stream("GET", url, timeout=httpx.Timeout(connect=10.0, read=20.0, write=20.0, pool=10.0), follow_redirects=True) as response:
             with Progress() as progress:
                 task = progress.add_task(downloading_info, total=int(response.headers.get("Content-Length", 0)))
                 with open(saved_path, "wb") as wb:
