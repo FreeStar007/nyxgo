@@ -278,7 +278,7 @@ def install_napcat() -> bool:
     if not shell(r"""sudo sed -i 's/"main": ".*\/index.js"/"main": ".\/loadNapCat.cjs"/' /opt/QQ/resources/app/package.json""", "package.json处理失败了啊", complex_mode=True):
         return False
 
-    info(f"NapCat搞定，输入“xvfb-run -a qq --no-sandbox -q <你的QQ号>”来启动，会让你扫码登录，随后在它给的WebUI地址中配置一个WS服务器，消息格式选Array，然后自己输入一个端口，记住这个地址，例如6666端口地址就是ws://127.0.0.1:6666，然后在NyxBot配置界面的{Choices.STARTING_MODE.value}选择{Choices.CLIENT_MODE}再设置{Choices.CONNECTION_URL.value}去连接NapCat的WS服务器地址就行了")
+    info(f"NapCat搞定，输入“xvfb-run -a qq --no-sandbox -q <你的QQ号>”来启动，会让你扫码登录，随后在它给的WebUI地址中配置一个WS服务器，消息格式选Array，然后自己输入一个端口，记住这个地址，例如6666端口地址就是ws://127.0.0.1:6666，然后在NyxBot配置界面的{Choices.STARTING_MODE.value}选择{Choices.CLIENT_MODE.value}再设置{Choices.CONNECTION_URL.value}去连接NapCat的WS服务器地址就行了")
     remove(saved_path, "删除临时文件失败了啊")
     return True
 
