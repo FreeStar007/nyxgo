@@ -30,6 +30,7 @@ class Choices(Enum):
     TOKEN = "启动时连接/被连接的token"
     SERVER_MODE = "服务端模式"
     CLIENT_MODE = "客户端模式"
+    DEBUG = "调试日志"
 
 
 # 日志函数
@@ -357,7 +358,8 @@ def configure_nyxbot() -> bool:
         Choices.STARTING_MODE.value,
         Choices.CONNECTION_URL.value,
         Choices.END_POINT.value,
-        Choices.TOKEN.value
+        Choices.TOKEN.value,
+        Choices.DEBUG.value
         )))
     for choice in choices:
         match choice:
@@ -385,6 +387,8 @@ def configure_nyxbot() -> bool:
             case Choices.TOKEN.value:
                 if not edit_locate("token", ask(Text("token", message=f"请输入{Choices.TOKEN.value}（默认为空）"))):
                     return False
+            case Choices.DEBUG.value:
+                starter_command.append("--debug")
             case _:
                 return False
                 
