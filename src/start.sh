@@ -22,20 +22,24 @@ else
     echo "暂不支持的系统"
     exit
 fi
+echo "开始配置环境……"
+if ! command -v git --help &> /dev/null; then
+    echo "安装git……"
+    sudo "$pkgm" install -y git
+fi
+if ! command -v screen --help &> /dev/null; then
+    echo "安装screen……"
+    sudo "$pkgm" install -y screen
+fi
+if ! "$SYSTEM_PYTHON" -m pip --help &> /dev/null; then
+    echo "安装pip3……"
+    sudo "$pkgm" install -y python3-pip
+fi
+if ! "$SYSTEM_PYTHON" -m venv --help &> /dev/null; then
+    echo "安装venv……"
+    sudo "$pkgm" install -y python3-venv
+fi
 if [ ! -d "$TARGET" ]; then
-    echo "初始化运行环境……"
-    if ! command -v git &> /dev/null; then
-        echo "安装git……"
-        sudo "$pkgm" install -y git
-    fi
-    if ! "$SYSTEM_PYTHON" -m pip --help &> /dev/null; then
-        echo "安装pip3……"
-        sudo "$pkgm" install -y python3-pip
-    fi
-    if ! "$SYSTEM_PYTHON" -m venv --help &> /dev/null; then
-        echo "安装venv……"
-        sudo "$pkgm" install -y python3-venv
-    fi
     sudo "$SYSTEM_PYTHON" -m venv "$TARGET"
     sudo chown -R "$NUSER:$NUSER" "$TARGET"
     sudo chmod -R +x "$TARGET"
