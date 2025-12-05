@@ -79,7 +79,7 @@ def copy(source: str, target: str, error_info: str, append="") -> bool:
 
 # 临时Shell
 def temp_shell() -> None:
-    shell(r"""screen -S temp -X kill ; screen -dmS temp && screen -S temp -X stuff "PS1=\"(TEMP SHELL)$PWD>\" && clear\n" && screen -r temp""", complex_mode=True)
+    shell(r"""screen -S temp -X kill ; screen -dmS temp && screen -S temp -X stuff "PS1=\"(TEMP SHELL)$PWD> \" && clear\n" && screen -r temp""", complex_mode=True)
     # shell(f"PS1=\"(TEMP BASH){os.getcwd()}>\" bash --norc", complex_mode=True)
     warn("已退出临时Shell环境")
 
@@ -418,8 +418,8 @@ def main() -> None:
             case _:
                 return
     
-    if ask(Confirm("to_shell", message="需要进入临时shell环境以启动QQ机器人框架吗？", default=True)):
-        info("10秒后进入临时Shell环境，让你启动一下QQ机器人框架并去配置，结束后输入CTRL+A与CTRL+D来挂到后台")
+    if ask(Confirm("to_shell", message="需要进入临时Shell环境以启动QQ机器人框架吗？", default=True)):
+        warn("10秒后进入临时Shell环境，让你启动一下QQ机器人框架并去配置，结束后输入CTRL+A与CTRL+D来挂到后台")
         sleep(10)
         temp_shell()
 
