@@ -417,10 +417,12 @@ def main() -> None:
                     return
             case _:
                 return
+    
+    if ask(Confirm("to_shell", message="需要进入临时shell环境以启动QQ机器人框架吗？", default=True)):
+        info("10秒后进入临时Shell环境，让你启动一下QQ机器人框架并去配置，结束后输入CTRL+A与CTRL+D来挂到后台")
+        sleep(10)
+        temp_shell()
 
-    info("10秒后进入临时Shell环境，让你启动一下QQ机器人框架并去配置，结束后输入CTRL+A与CTRL+D来挂到后台")
-    sleep(10)
-    temp_shell()
     nyxbot_path = ask(Path("nyxbot_path", message=f"请输入NyxBot.jar的路径（当前位于{os.getcwd()}），或者直接输入“-”开始下载它", validate=checkout_nyxbot))
     if not configure_nyxbot():
         error("配置过程发生错误")
