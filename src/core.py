@@ -419,7 +419,7 @@ def main() -> None:
                 return
     
     if ask(Confirm("to_shell", message="需要进入临时Shell环境以启动QQ机器人框架吗？", default=True)):
-        warn("10秒后进入临时Shell环境，让你启动一下QQ机器人框架并去配置，结束后输入CTRL+A与CTRL+D来回到前台"
+        warn("10秒后进入临时Shell环境，让你启动一下QQ机器人框架并去配置，结束后输入CTRL+A与CTRL+D来回到前台")
         sleep(10)
         temp_shell()
 
