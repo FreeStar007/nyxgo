@@ -5,7 +5,7 @@ import json
 import yaml
 import subprocess as sp
 import shutil
-from time import time
+from time import time, sleep
 from typing import Any
 from enum import Enum
 from datetime import datetime
@@ -50,15 +50,17 @@ with open("./source.json", "r") as r:
 
 
 # 命令输入
-def shell(command: str, error_info: str, complex_mode=False) -> bool:
+def shell(command: str, error_info=None, complex_mode=False) -> bool:
     try:
         sp.run(command.strip().split(" ") if not complex_mode else command, check=True, shell=complex_mode)
     except sp.CalledProcessError:
-        error(error_info)
+        if error_info:
+            error(error_info)
+
         return False
         
     return True
-    
+
 
 # 文件删除
 def remove(target: str, error_info: str, append="") -> bool:
@@ -73,6 +75,13 @@ def move(source: str, target: str, error_info: str) -> bool:
 # 文件复制
 def copy(source: str, target: str, error_info: str, append="") -> bool:
     return shell(f"sudo cp -f {source} {target}{append}", error_info)
+
+
+# 临时Shell
+def temp_shell() -> None:
+    shell(r"""screen -S temp -X kill ; screen -dmS temp && screen -S temp -X stuff "PS1=\"(TEMP SHELL)$PWD>\" && clear\n" && screen -r temp""", complex_mode=True)
+    # shell(f"PS1=\"(TEMP BASH){os.getcwd()}>\" bash --norc", complex_mode=True)
+    warn("已退出临时Shell环境")
 
 
 # 检测包管理器
@@ -409,7 +418,9 @@ def main() -> None:
             case _:
                 return
 
-    ask(Text("_", message="这里我会等你多开终端启动好QQ机器人框架，好了就随便输入点什么，然后继续配置NyxBot吧"))
+    info("10秒后进入临时Shell环境，让你启动一下QQ机器人框架并去配置，结束后输入CTRL+A与CTRL+D来挂到后台")
+    sleep(10)
+    temp_shell()
     nyxbot_path = ask(Path("nyxbot_path", message=f"请输入NyxBot.jar的路径（当前位于{os.getcwd()}），或者直接输入“-”开始下载它", validate=checkout_nyxbot))
     if not configure_nyxbot():
         error("配置过程发生错误")
