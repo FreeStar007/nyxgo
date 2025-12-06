@@ -76,8 +76,8 @@ def copy(source: str, target: str, error_info: str, append="") -> bool:
 
 
 # 临时Shell
-def temp_shell() -> None:
-    shell(r"""screen -S temp -X kill ; screen -dmS temp && screen -S temp -X stuff "PS1=\"(TEMP SHELL)$PWD> \" && clear\n" && screen -r temp""", complex_mode=True)
+def temp_shell(name: str, operation: str) -> None:
+    shell(f"""screen -S {name} -X kill ; screen -dmS {name} && screen -S {name} -X stuff {operation} && screen -r {name}""", complex_mode=True)
     # shell(f"PS1=\"(TEMP BASH){os.getcwd()}>\" bash --norc", complex_mode=True)
     warn("已退出临时Shell环境")
 
@@ -391,9 +391,9 @@ def main() -> None:
                 return
     
     if ask(Confirm("to_shell", message="需要进入临时Shell环境以启动QQ机器人框架吗？", default=True)):
-        warn("10秒后进入临时Shell环境，让你启动一下QQ机器人框架并去配置，结束后输入CTRL+A与CTRL+D来回到前台")
+        warn("10秒后进入临时Shell环境，让你启动一下QQ机器人框架并去配置，结束后输入CTRL+A和D来回到前台")
         sleep(10)
-        temp_shell()
+        temp_shell("onebot", "\"PS1=\\\"(TEMP SHELL)$PWD> \\\" && clear\\n\"")
 
     nyxbot_path = ask(Path("nyxbot_path", message=f"请输入NyxBot.jar的路径（当前位于{os.getcwd()}），或者直接输入“-”开始下载它", validate=checkout_nyxbot))
     if not configure_nyxbot():
@@ -401,8 +401,11 @@ def main() -> None:
         return
         
     info("配置完成，启动NyxBot……")
-    info("在启动完成后可以根据其终端的输出查看WebUI（也就是配置NyxBot的界面）地址和端口号以及账号密码，记得牢记哦！")
-    shell(" ".join(starter_command), "启动失败，只能你自己来了")
+    info("在启动完成后可以根据其终端的输出查看WebUI（也就是配置NyxBot的界面）地址和端口号以及账号密码，然后最后记得一切结束后CTRL+A和D再次挂到后台，这样就不怕它挂掉了！")
+    warn("10秒后进入临时Shell环境来执行NyxBot，会本次自动帮你配置一切，你只需要在NyxBot的数据初始化完毕后输入CTRL和D回到前台")
+    sleep(10)
+    temp_shell("nyxbot", f"\"{' '.join(starter_command)}\\n\"")
+    info("NyxBot部署完毕！")
 
 
 if __name__ == "__main__":
