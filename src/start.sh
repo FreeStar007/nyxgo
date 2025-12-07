@@ -31,11 +31,11 @@ if ! command -v screen --help &> /dev/null; then
     echo "安装screen……"
     sudo "$pkgm" install -y screen
 fi
-if ! "$SYSTEM_PYTHON" -m pip --help &> /dev/null; then
+if ! "$pkgm" list --installed | grep -q "python3-pip"; then
     echo "安装pip3……"
     sudo "$pkgm" install -y python3-pip
 fi
-if ! "$SYSTEM_PYTHON" -m venv --help &> /dev/null; then
+if ! "$pkgm" list --installed | grep -q "python3-venv"; then
     echo "安装venv……"
     sudo "$pkgm" install -y python3-venv
 fi
