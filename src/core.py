@@ -84,13 +84,13 @@ def temp_shell(name: str, operation: str) -> None:
 # 检测包管理器
 def checkout_pkgm() -> bool:
     global pkgm
-    if os.path.exists("/bin/apt") or os.path.exists("/usr/bin/apt"):
+    if shell("command -v apt > /dev/null", complex_mode=True):
         info("使用apt包管理器")
         pkgm = "apt"
-    elif os.path.exists("/bin/dnf") or os.path.exists("/usr/bin/dnf"):
+    elif shell("command -v dnf > /dev/null", complex_mode=True):
         info("使用dnf包管理器")
         pkgm = "dnf"
-    elif os.path.exists("/bin/yum") or os.path.exists("/usr/bin/yum"):
+    elif shell("command -v yum > /dev/null", complex_mode=True):
         info("使用yum包管理器")
         pkgm = "yum"
     else:
