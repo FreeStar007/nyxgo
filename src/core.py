@@ -5,7 +5,7 @@ import json
 import subprocess as sp
 import shutil
 from time import time, sleep
-from typing import Any
+from typing import Any, Iterator
 from enum import Enum
 from datetime import datetime
 from platform import machine
@@ -38,7 +38,7 @@ info = lambda message: rprint(f"[bold][green][{date()} INFO] {message}[/green][/
 warn = lambda message: rprint(f"[bold][yellow][{date()} WARN] {message}[/yellow][/bold]")
 error = lambda message: rprint(f"[bold][red][{date()} ERROR] {message}[/red][/bold]")
 time_ms = lambda: time() * 1000
-pkgm = None # 初始化使用的包管理器判断变量
+global_pkgm = None # 初始化使用的包管理器判断变量
 structure = None # 初始化架构
 starter_command = ["java", "-jar"] # 启动命令
 # 全局下载资源URL文件
@@ -47,9 +47,9 @@ with open("./source.json", "r") as r:
 
 
 # 命令输入
-def shell(command: str, error_info=None, complex_mode=False) -> bool:
+def shell(command: Iterator | str, error_info=None, complex_mode=False) -> str | bool:
     try:
-        sp.run(command.strip().split(" ") if not complex_mode else command, check=True, shell=complex_mode)
+        return sp.run(command.strip().split(" ") if not complex_mode else command, capture_output=True, text=True, check=True, shell=complex_mode).stdout
     except sp.CalledProcessError:
         if error_info:
             error(error_info)
@@ -77,27 +77,21 @@ def copy(source: str, target: str, error_info: str, append="") -> bool:
 # 临时Shell
 def temp_shell(name: str, operation: str) -> None:
     shell(f"""screen -S {name} -X kill ; screen -dmS {name} && screen -S {name} -X stuff {operation} && screen -r {name}""", complex_mode=True)
-    # shell(f"PS1=\"(TEMP BASH){os.getcwd()}>\" bash --norc", complex_mode=True)
     warn("已退出临时Shell环境")
 
 
 # 检测包管理器
 def checkout_pkgm() -> bool:
-    global pkgm
-    if shell("command -v apt > /dev/null", complex_mode=True):
-        info("使用apt包管理器")
-        pkgm = "apt"
-    elif shell("command -v dnf > /dev/null", complex_mode=True):
-        info("使用dnf包管理器")
-        pkgm = "dnf"
-    elif shell("command -v yum > /dev/null", complex_mode=True):
-        info("使用yum包管理器")
-        pkgm = "yum"
-    else:
-        error("暂不支持的发行版啊")
-        return False
-        
-    return True
+    global global_pkgm
+    pkgms = ("apt", "dnf", "yum")
+    for pkgm in pkgms:
+        if shell(f"command -v {pkgm}", complex_mode=True):
+            info(f"使用{pkgm}包管理器")
+            global_pkgm = pkgm
+            return True
+            
+    error("暂不支持的发行版啊")
+    return False
 
 
 # 检测架构
@@ -218,7 +212,7 @@ def install_jdk() -> bool:
     }
     target_pkg["yum"] = target_pkg["dnf"]
     info("开始安装OpenJDK21……")
-    if not shell(f"sudo {pkgm} install -y {target_pkg[pkgm]}", "OpenJDK21安装失败了，只能你自己先装上再重启脚本了"):
+    if not shell(f"sudo {global_pkgm} install -y {target_pkg[global_pkgm]}", "OpenJDK21安装失败了，只能你自己先装上再重启脚本了"):
         return False
         
     info("OpenJDK21装完了")
@@ -241,13 +235,13 @@ def install_qq() -> bool:
     info("开始帮你搞Linux版QQ……")
     target_pkg = source["qq"]
     target_pkg["yum"] = target_pkg["dnf"]
-    saved_path = f"/tmp/linuxqq-{uuid4()}{target_pkg[pkgm]['suffix']}"
+    saved_path = f"/tmp/linuxqq-{uuid4()}{target_pkg[global_pkgm]['suffix']}"
     info("开始下载Linux版QQ文件……")
-    if not downloader(target_pkg[pkgm][structure], saved_path, "Linux版QQ文件下载中……"):
+    if not downloader(target_pkg[global_pkgm][structure], saved_path, "Linux版QQ文件下载中……"):
         return False
 
     info("我装一下它……")
-    if not shell(f"sudo {pkgm} install -y {saved_path}", "我靠，装失败了，你自己装试试看"):
+    if not shell(f"sudo {global_pkgm} install -y {saved_path}", "我靠，装失败了，你自己装试试看"):
         return False
         
     info(f"Linux版QQ装完了")
@@ -265,7 +259,7 @@ def install_napcat() -> bool:
         "dnf": "xorg-x11-server-Xvfb xorg-x11-xauth"
     }
     target_pkg["yum"] = target_pkg["dnf"]
-    if not shell(f"sudo {pkgm} install -y {target_pkg[pkgm]}", "安装xvfb和xauth时失败了，只能靠你自己了或者求助吧"):
+    if not shell(f"sudo {global_pkgm} install -y {target_pkg[global_pkgm]}", "安装xvfb和xauth时失败了，只能靠你自己了或者求助吧"):
         return False
         
     info("开始复制配置文件……")
@@ -392,7 +386,7 @@ def main() -> None:
     if ask(Confirm("to_shell", message="需要进入临时Shell环境以启动QQ机器人框架吗？", default=True)):
         warn("10秒后进入临时Shell环境，让你启动一下QQ机器人框架并去配置，结束后输入CTRL+A和D来回到前台")
         sleep(10)
-        temp_shell("onebot", "\"PS1=\\\"(TEMP SHELL) \w\$ \\\" && clear\\n\"")
+        temp_shell("onebot", "\"PS1=\\\"(TEMP SHELL) $ \\\" && clear\\n\"")
 
     nyxbot_path = ask(Path("nyxbot_path", message=f"请输入NyxBot.jar的路径（当前位于{os.getcwd()}），或者直接输入“-”开始下载它", validate=checkout_nyxbot))
     if not configure_nyxbot():
