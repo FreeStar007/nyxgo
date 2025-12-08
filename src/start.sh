@@ -35,10 +35,6 @@ if ! "$pkgm" list --installed | grep -q "python3-pip"; then
     echo "安装pip3……"
     sudo "$pkgm" install -y python3-pip
 fi
-if ! "$pkgm" list --installed | grep -q "python3-venv"; then
-    echo "安装venv……"
-    sudo "$pkgm" install -y python3-venv
-fi
 if [ ! -d "$TARGET" ]; then
     sudo "$SYSTEM_PYTHON" -m venv "$TARGET"
     sudo chown -R "$NUSER:$NUSER" "$TARGET"
