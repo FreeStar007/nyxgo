@@ -300,12 +300,12 @@ def checkout_env() -> bool:
         if not checkout_structure():
             return False
             
-        if not (os.path.exists("/usr/bin/java") or os.path.exists("/bin/java")):
+        if not shell("command -v java > /dev/null", complex_mode=True):
             warn("没有java啊，我给你装个openjdk21吧")
             if not install_jdk():
                 return False
             
-        if not (os.path.exists("/bin/qq") or os.path.exists("/usr/bin/qq")):
+        if not shell("command -v qq > /dev/null", complex_mode=True):
             warn("你没装QQ啊，我帮你装一个吧，这是QQ机器人框架运行的必须条件啊")
             if not install_qq():
                 return False
@@ -395,7 +395,7 @@ def main() -> None:
         
     info("配置完成，启动NyxBot……")
     info("在启动完成后可以根据其终端的输出查看WebUI（也就是配置NyxBot的界面）地址和端口号以及账号密码，然后最后记得一切结束后CTRL+A和D再次挂到后台，这样就不怕它挂掉了！")
-    warn("10秒后进入临时Shell环境来执行NyxBot，本次会自动帮你配置一切，你只需要在NyxBot的数据初始化完毕后输入CTRL和D回到前台")
+    warn("10秒后进入临时Shell环境来执行NyxBot，会本次自动帮你配置一切，你只需要在NyxBot的数据初始化完毕后输入CTRL和D回到前台")
     sleep(10)
     temp_shell("nyxbot", f"\"{' '.join(starter_command)}\\n\"")
     info("NyxBot部署完毕！")
