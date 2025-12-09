@@ -5,20 +5,21 @@
 
  - 系统至少需要有**Python3.10**及以上版本
  
- - 暂时仅支持**Debian系**以及**RedHat系**的**标准Linux系统**
+ - 目前仅支持**Debian系**以及**RedHat系**的**标准Linux系统**
  
     - **Debian系**：以**apt**作为包管理器的，如**Debian本体/Ubuntu/Kali/Mint**等
+
     - **RedHat系**例子：以**dnf/yum**作为包管理器的，如**RedHat本体（即RHEL）/CentOS/Fedora/Rocky**等
 
 # 项目用法
 
  - 进入**src**文件夹，使用命令`bash ./start.sh`以启动，若没有权限就使用`chmod -x ./start.sh`赋予，**kill.sh**用于停止运行，用法与**start.sh**一致
- 
+
  - 该项目附有使用教学视频，新手可以点击这里观看[**使用教学视频**](https://www.bilibili.com/video/BV1Z527BfEB5/?share_source=copy_web&vd_source=a0744cac2ad59dfb4f26cedd1524ceb3)
 
 # NyxBot项目
 
- - Warframe状态查询机器人，部署简易，功能丰富，这里是[**项目地址**](https://github.com/KingPrimes/NyxBot)
+ - Warframe状态查询机器人，部署简易，功能丰富，更新及时，这里是[**项目地址**](https://github.com/KingPrimes/NyxBot)
 
 # OneBot协议端项目（即QQ机器人框架）
 
