@@ -23,11 +23,11 @@ if [ -z "$SYSTEM_PYTHON" ]; then
     echo "安装python3……"
     sudo "$pkgm" install -y python3
 fi
-if ! command -v git --help &> /dev/null; then
+if ! command -v git &> /dev/null; then
     echo "安装git……"
     sudo "$pkgm" install -y git
 fi
-if ! command -v screen --help &> /dev/null; then
+if ! command -v screen &> /dev/null; then
     echo "安装screen……"
     sudo "$pkgm" install -y screen
 fi
