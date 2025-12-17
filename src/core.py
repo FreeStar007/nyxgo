@@ -76,7 +76,7 @@ def copy(source: str, target: str, error_info: str, append="") -> bool:
 
 # 临时Shell
 def temp_shell(name: str, operation: str) -> None:
-    shell(f"""screen -S {name} -X kill ; screen -dmS {name} && screen -S {name} -X stuff {operation} && screen -r {name}""", complex_mode=True)
+    shell(f"screen -S {name} -X kill ; screen -dmS {name} && screen -S {name} -X stuff {operation} && screen -r {name}", complex_mode=True)
     warn("已退出临时Shell环境")
 
 
