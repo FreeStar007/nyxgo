@@ -11,6 +11,8 @@ NyxGo**项目本身是为**NyxBot**定制的引导脚本，需一定基础，与
     - **Debian系**：以**apt**作为包管理器的，如**Debian本体/Ubuntu/Kali/Mint**等
 
     - **RedHat系**：以**dnf/yum**作为包管理器的，如**RedHat本体（即RHEL）/CentOS/Fedora/Rocky**等
+        - **epel-release**：部分发行版例如Rocky需要安装该源，输入`sudo dnf install epel-release -y`以安装
+    
 
 # 项目用法
 
