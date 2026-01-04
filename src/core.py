@@ -361,7 +361,7 @@ def main() -> None:
     global locate_dir
     shell("clear")
     rprint(Panel(
-        "Warframe状态查询机器人，由著名架构师王小美开发，部署简易，更新勤奋，让我们追随她！\n请在安装过程中确保网络通畅啊！\n王小美个人博客地址：https://kingprimes.top",
+        "Warframe状态查询机器人，由著名架构师王小美开发，部署简易，更新勤奋，让我们追随她！\n请在安装过程中确保网络通畅啊！\n王小美个人博客地址：https://kingprimes.top\n还有一件事！加入王小美创建的高级技术研讨群，以实时向她报告机器人情况！也可以撩她！",
         title="NyxBot引导脚本",
         subtitle="快速部署NyxBot",
         border_style="bold cyan"
