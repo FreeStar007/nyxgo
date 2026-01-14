@@ -5,7 +5,7 @@ if [ "$EUID" -eq 0 ]; then
 fi
 readonly NUSER=$USER
 readonly SYSTEM_PYTHON="$(command -v python3)"
-readonly TARGET="/usr/lib/nyxgo_venv"
+readonly TARGET="/usr/local/nyxgo_venv"
 readonly TEMP_HOME="$TARGET/bin"
 pkgm=""
 if command -v apt &> /dev/null; then
