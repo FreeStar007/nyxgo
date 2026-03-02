@@ -300,8 +300,8 @@ def checkout_env() -> bool:
         if not checkout_structure():
             return False
             
-        if not shell("command -v java > /dev/null", complex_mode=True):
-            warn("没有java啊，我给你装个openjdk21吧")
+        if not shell("java -version 2>&1 | grep -q \"21\\.\"", complex_mode=True):
+            warn("你这环境没有java21以上版本啊，我给你装个openjdk21吧")
             if not install_jdk():
                 return False
             
