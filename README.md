@@ -1,6 +1,6 @@
 # NyxGo项目简介
 
-**NyxGo**项目本身是为**NyxBot**定制的引导脚本，与**NyxBot**环境配置及其启动关联，该项目会在**/usr/lib**文件夹里面创建一个名为**nyxgo_venv**的文件夹作为虚拟环境防止污染系统，脚本提供**基础运行环境**的配置、**QQ机器人框架**的安装以及**NyxBot**的启动配置
+**NyxGo**项目本身是为**NyxBot**定制的引导脚本，与**NyxBot**环境配置及其启动关联，该项目会在`/usr/local/nyxgo_venv`文件夹里面创建一个名为**nyxgo_venv**的文件夹作为虚拟环境防止污染系统，脚本提供**基础运行环境**的配置、**QQ机器人框架**的安装以及**NyxBot**的启动配置
 
 # 运行准备
 
@@ -14,17 +14,17 @@
 
   - **Python**环境配置
 
-    - 命令行输入`python3 --version`即可查看当前环境下的Python版本，要求为**Python3.10.x**及其以上版本，若高于，则继续跳过此条；若低于，一般可通过系统包管理器来安装，推荐**Python3.12.x**，常见包名为`python3.12`，安装例子：`sudo apt/dnf install -y python3.12`，安装后需要重新链接，命令行输入`sudo ln -sf /usr/bin/python3.12 /usr/bin/python && sudo ln -sf /usr/bin/python3.12 /usr/bin/python3`，这样就完成Python配置了，注意，部分发行版可能还得另外装venv环境，一般是输入`sudo apt/dnf install -y python3.12-venv`
+    - 命令行输入`python3 --version`即可查看当前环境下的Python版本，要求为**Python3.10.x**及其以上版本，若高于，则继续跳过此条；若低于，一般可通过系统包管理器来安装，推荐**Python3.12.x**，常见包名为`python3.12`，安装例子：`sudo apt/dnf install -y python3.12`，安装后需要重新链接，命令行输入`sudo ln -sf /usr/bin/python3.12 /usr/bin/python && sudo ln -sf /usr/bin/python3.12 /usr/bin/python3`，这样就完成Python配置了，注意，部分发行版可能还得另外装`venv`环境，一般是输入`sudo apt/dnf install -y python3.12-venv`
 
   - **确保网络通畅**：安装过程中确保网络**稳定**，**波动小**，防止**下载**/**请求**等网络操作意外中断
     
 # 项目用法
 
-  - **start.sh**：启动脚本，输入`chmod +x ./start.sh`赋予权限后再输入`bash ./start.sh`即可执行脚本
+  - `start.sh`：启动脚本，输入`chmod +x ./start.sh`赋予权限后再输入`bash ./start.sh`即可执行脚本
 
-  - **kill.sh**：终止服务脚本，用于终止机器人运行，使用方法同上
+  - `kill.sh`：终止服务脚本，用于终止机器人运行，使用方法同上
   
-  - **reset.sh**：环境重置脚本，用于在脚本出错时重置环境，然后可重新运行start.sh，使用方法同上
+  - `reset.sh`：环境重置脚本，用于在脚本出错时重置环境，然后可重新运行`start.sh`，使用方法同上
 
   - **教学视频**：新手可以点击这里观看[**使用教学视频**](https://b23.tv/Yf52q6a)
 
