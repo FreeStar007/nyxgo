@@ -37,6 +37,8 @@ date = lambda: datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 info = lambda message: rprint(f"[bold][green][{date()} INFO] {message}[/green][/bold]")
 warn = lambda message: rprint(f"[bold][yellow][{date()} WARN] {message}[/yellow][/bold]")
 error = lambda message: rprint(f"[bold][red][{date()} ERROR] {message}[/red][/bold]")
+# 单次提问简化
+ask = lambda question: tuple(prompt((question,)).values())[0]
 time_ms = lambda: time() * 1000
 global_pkgm = None # 初始化使用的包管理器判断变量
 structure = None # 初始化架构
@@ -179,11 +181,6 @@ def github_proxy(github_url) -> str:
     choice = min(speed, key=speed.get)
     info(f"使用{choice}作为代理服务器，延时为{speed[choice]}ms，一共可用代理服务器数量为{len(speed)}/{len(source['proxies'])}")
     return f"{choice}/{github_url}"
-
-
-# 单次提问简化
-def ask(question) -> Any:
-    return tuple(prompt((question,)).values())[0]
 
 
 # 下载器
